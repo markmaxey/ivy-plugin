@@ -363,9 +363,12 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             try {
                 EnvVars envVars = getEnvironment(listener);
 
+                if (!project.isAggregatorStyleBuild() || project.isIncrementalBuild()) {
+                    parseIvyDescriptorFiles(listener, logger, envVars);
+                }
+
                 if (!project.isAggregatorStyleBuild()) {
                     // start module builds
-                    parseIvyDescriptorFiles(listener, logger, envVars);
 
                     DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
                     Set<IvyModule> triggeredModules = new HashSet<IvyModule>();
@@ -446,8 +449,6 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         Properties additionalProperties = null;
 
                         if (project.isIncrementalBuild()) {
-                            parseIvyDescriptorFiles(listener, logger, envVars);
-
                             List<String> changedModules = new ArrayList<String>();
                             for (IvyModule m : project.sortedActiveModules) {
                                 // Check if incrementalBuild is selected and that
