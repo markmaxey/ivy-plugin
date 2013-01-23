@@ -118,6 +118,8 @@ public abstract class IvyBuilder implements DelegatingCallable<Result,IOExceptio
 
             System.getProperties().putAll(systemProps);
 
+            registerSystemProperties();
+
             listener.getLogger().println(formatArgs(goals));
 //            int r = Main.launch(goals.toArray(new String[goals.size()]));
 
@@ -172,6 +174,20 @@ public abstract class IvyBuilder implements DelegatingCallable<Result,IOExceptio
         for (String arg : args)
             buf.append(' ').append(arg);
         return buf.toString();
+    }
+
+    /**
+     * Add all the {@link #systemProps jenkins environment variables} into the {@link System#getProperties() system properties}
+     * Ignores {@link #systemProps jenkins environment variables} with empty keys.
+     */
+    protected void registerSystemProperties() {
+        for (Map.Entry<String, String> e : systemProps.entrySet()) {
+            if ("".equals(e.getKey()))
+                continue;
+            if (e.getValue() != null) {
+                System.getProperties().put(e.getKey(), e.getValue());
+            }
+        }
     }
 
     private String format(NumberFormat n, long nanoTime) {
