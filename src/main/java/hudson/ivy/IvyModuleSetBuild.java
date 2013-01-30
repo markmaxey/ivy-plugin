@@ -779,6 +779,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             if (envVars != null && !envVars.isEmpty()) {
                 for (Entry<String, String> entry : envVars.entrySet()) {
                     if (entry.getKey() != null && entry.getValue() != null) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("env." + entry.getKey() + "=" + entry.getValue());
+                        }
                         this.properties.put("env." + entry.getKey(), entry.getValue());
                     }
                 }
@@ -787,7 +790,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
 		@SuppressWarnings("unchecked")
         public List<IvyModuleInfo> call() throws Throwable {
-			File ws = new File(workspace);
+
+            System.getProperties().putAll(properties);
+
+            File ws = new File(workspace);
             FileSet ivyFiles = Util.createFileSet(ws, ivyFilePattern, ivyFileExcludePattern);
             final PrintStream logger = listener.getLogger();
 
@@ -861,7 +867,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             
             try {
                 IvySettings ivySettings = new IvySettings();
-                ivySettings.addAllVariables(properties);
+                //ivySettings.addAllVariables(properties);
                 for (File file : propertyFiles) {
                     ivySettings.loadProperties(file);
                 }
