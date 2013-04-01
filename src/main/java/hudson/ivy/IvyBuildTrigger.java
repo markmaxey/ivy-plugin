@@ -286,13 +286,22 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     		// Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
     		FilePath backupCopy = new FilePath(localFile).child(localDestFile);
     		long flastModified = f.lastModified();
-    		if (flastModified == 0l) throw new FileNotFoundException("Can't stat file " + f);
-    		if (flastModified > lastmodified) {
+            if ((flastModified != 0l) && (flastModified > lastmodified)) {
     			f.copyTo(backupCopy);
     			localFile.setLastModified(flastModified);
     			copied = true;
     			LOGGER.info("Copied the workspace file "+fileToCopy+" to backup "+localFile.getCanonicalFile().toString()+"/"+localDestFile);
     		}
+            else if (flastModified == 0l) {
+                if (!backupCopy.exists()) {
+                    // If neither the file to be copied NOR the backup copy were found, throw an exception
+                    throw new FileNotFoundException("Can't stat file " + f + " and can't find the backup copy " + backupCopy);
+                }
+                else {
+                    // If the file to be copied does not exist but the backup copy does, assume the backup is up-to-date
+                    LOGGER.info(f + " does not exist, so using the backup found in " + localFile.getCanonicalPath());
+                }
+            }
         }
         return copied;
     }
